@@ -1,0 +1,15 @@
+[project]
+name = "ukvirtualfplchecker"
+version = "0.1.0"
+description = "Virtual flight plan checker for UK airspace"
+requires-python = ">=3.13"
+dependencies = [
+    "openpyxl>=3.1.5",
+    "pandas>=3.0.5",
+    "pyside6>=6.11.1",
+]
+
+[dependency-groups]
+dev = [
+    "pyinstaller>=6.22.0",
+]

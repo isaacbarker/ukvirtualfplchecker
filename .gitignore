@@ -1,0 +1,65 @@
+# =========================
+# Python
+# =========================
+
+data
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Python virtual environment
+.venv/
+
+# Packaging / distribution
+build/
+dist/
+*.egg-info/
+
+# =========================
+# PyCharm
+# =========================
+
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# =========================
+# Testing / coverage
+# =========================
+
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# =========================
+# Type checkers / linters
+# =========================
+
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+
+# =========================
+# OS
+# =========================
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+
+# =========================
+# Environment / secrets
+# =========================
+
+.env
+.env.*
+!.env.example
