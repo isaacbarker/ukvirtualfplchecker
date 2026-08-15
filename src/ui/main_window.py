@@ -53,7 +53,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
 
         self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, True)
-        self.setWindowIcon(QIcon(str(resource_path("assets/icon.png"))))
+        self.setWindowIcon(QIcon(str(resource_path("assets/icon.ico"))))
 
         # setup version/airac label
         airac_date = get_airac_date(dt.now())
