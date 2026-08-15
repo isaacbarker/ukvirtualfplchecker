@@ -59,7 +59,7 @@ def fetch_note(note_number: int) -> tuple[int, str, str] | None:
     """Fetch note, retrieves note from note number
 
     Args:
-        note_number: int corresponding to note idenitifer in SRd
+        note_number: int corresponding to note idenitifer in SRD
 
     Returns:
         tuple of note number, title and text
@@ -147,14 +147,32 @@ def check_sid(dep: str, fpl: str) -> CheckResult:
             "No valid sid identified from fpl"
         )
 
-    # fetch notes in srd pertaining to the sid
-    notes_for_sid = srd_notes.loc[
-        (srd_notes["Title"] == f"{filed_sid} SID")
-        | (srd_notes["Title"] == f"{dep} {filed_sid} SID")
-        | (srd_notes["Title"] == f"{dep} {filed_sid} SIDS")
-    ]
+    # fetch possible notes pertaining to the airfield (tackles EGNX note 227 BPK SID)
+    notes_nos_for_airport = []
 
-    if len(notes_for_sid) == 0:  # sid found with no notes
+    routes_for_airport = srd[srd["ADEP/Entry"] == dep].fillna("")
+
+    for r_idx in range(len(routes_for_airport)):
+        note_nos_for_route = fetch_notes(routes_for_airport["Remarks"].iloc[r_idx])
+        notes_nos_for_airport += note_nos_for_route
+
+    notes_nos_for_airports_aux = list(set(notes_nos_for_airport))
+    notes_nos_for_sid = []
+
+    # search for notes containing SID and the filed SID
+    for note_idx in notes_nos_for_airports_aux:
+
+        note = fetch_note(note_idx)
+
+        if not note: # ignore non-existing notes
+            continue
+
+        no, title, description = note
+
+        if "SID" in title or filed_sid in title or filed_sid in description:
+            notes_nos_for_sid.append(no)
+
+    if len(notes_nos_for_sid) == 0:  # sid found with no notes
         return CheckResult(
             CheckStatus.PASS,
             "SID valid with no warnings",
@@ -169,7 +187,7 @@ def check_sid(dep: str, fpl: str) -> CheckResult:
             "SID valid with warnings",
             SidCheckDetails(
                 filed_sid,
-                notes_for_sid["Number"].tolist()
+                notes_nos_for_sid
             )
         )
 
