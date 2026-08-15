@@ -26,3 +26,13 @@ and to consider if action must be taken on the flight plan
   - Departure and arrival airport names are also identified for clearances
 - Automatic SRD download based on current AIRAC cycle
 
+## Usage
+- Download the `.exe` file in the Releases tab
+- Enable third party server on Aurora (in the Other section)
+- Run Aurora, run the flight plan checker
+
+## Screenshots
+
+![](./screenshots/screenshot-1.png)
+![](./screenshots/screenshot-2.png)
+
