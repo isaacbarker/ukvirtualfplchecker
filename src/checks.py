@@ -130,6 +130,12 @@ def check_sid(dep: str, fpl: str) -> CheckResult:
 
     """
 
+    if dep not in srd["ADEP/Entry"].values:
+        return CheckResult(
+            CheckStatus.NA,
+            f"{dep} not covered in SRD"
+        )
+
     dep_routes = srd[srd["ADEP/Entry"] == dep]
     sids = list(np.unique(dep_routes["SID"].dropna()))
 
@@ -169,7 +175,7 @@ def check_sid(dep: str, fpl: str) -> CheckResult:
 
         no, title, description = note
 
-        if "SID" in title or filed_sid in title or filed_sid in description:
+        if "SID" in title and (filed_sid in title or filed_sid in description):
             notes_nos_for_sid.append(no)
 
     if len(notes_nos_for_sid) == 0:  # sid found with no notes
@@ -287,14 +293,14 @@ def check_semicircular_rule(dep: str, arr: str, fl: int) -> CheckResult:
 
 
 """SRD CHECK"""
-def check_route(dep: str, arr: str, fpl: str, ) -> CheckResult:
+def check_route(dep: str, arr: str, fpl: str, filed_sid: str | None = None ) -> CheckResult:
     """Checks if route is contained within the standard routeing documentation
 
     Args:
         dep: four letter airport icao code for departure airport
         arr: four letter airport icao code for arrival airport
         fpl: string containing the fixes/airways to be followed by the aircraft
-
+        filed_sid: string | None containing filed sid for routing
     Returns:
         CheckResult containing SrdCheckDetails containing routes found, verified route if found and the reason for the status
         if no route with the specified entry exit can be found then we return warn
@@ -332,17 +338,17 @@ def check_route(dep: str, arr: str, fpl: str, ) -> CheckResult:
 
     # calculate entry/exit points for fpl
 
-    if dep.startswith("EG") and arr.startswith("EG"):
+    if dep in srd["ADEP/Entry"].values and arr in srd["ADES/Exit"].values:
         # flights purely within UK airpsace
         entry_point = dep
         exit_point = arr
 
-    elif dep.startswith("EG") and len(exit_fixes) > 0:
+    elif dep in srd["ADEP/Entry"].values and len(exit_fixes) > 0:
         # flights exiting UK airspace
         entry_point = dep
         exit_point = exit_fixes[-1]
 
-    elif arr.startswith("EG") and len(entry_fixes) > 0:
+    elif arr in srd["ADES/Exit"].values and len(entry_fixes) > 0:
         # flight entering UK airspace
         exit_point = arr
         entry_point = entry_fixes[0]
@@ -355,7 +361,13 @@ def check_route(dep: str, arr: str, fpl: str, ) -> CheckResult:
     if entry_point is not None and exit_point is not None:  # no entry/exit point found
 
         # find possible srd routing
-        routes = srd.loc[(srd["ADEP/Entry"] == entry_point) & (srd["ADES/Exit"] == exit_point)]
+        if filed_sid:
+            routes = srd.loc[(srd["ADEP/Entry"] == entry_point)
+                             & (srd["ADES/Exit"] == exit_point)
+                             & (srd["SID"] == filed_sid)
+            ]
+        else:
+            routes = srd.loc[(srd["ADEP/Entry"] == entry_point) & (srd["ADES/Exit"] == exit_point)]
 
         if len(routes) > 0:
 

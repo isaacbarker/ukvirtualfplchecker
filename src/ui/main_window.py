@@ -14,7 +14,7 @@ from models import Aircraft, CheckStatus, SidCheckDetails, SrdCheckDetails, FlCh
 from srd import get_airac_date, resource_path
 from ui.main_window_ui import Ui_MainWindow
 
-VER = "0.1.0"
+VER = "0.1.1"
 
 def format_notes(note_idxs: list[int]) -> str:
     """Formats notes for checks
