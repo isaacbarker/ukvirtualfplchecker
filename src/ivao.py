@@ -39,6 +39,9 @@ class IvaoWorker(QObject):
     def get_selected_aircraft(self) -> None:
         """Fetch selected aircraft from Aurora Software and run FPL checks"""
 
+        if self.s is None:
+            return
+
         # send message
         try:
             self.s.sendall(b"#SELTFC\r\n")
