@@ -9,7 +9,7 @@ from PySide6.QtCore import QObject, Signal, QTimer
 
 from checks import check_sid, check_semicircular_rule, check_route, check_fl
 from models import CheckResult, CheckStatus, Aircraft
-from srd import airports
+from srd import airports, srd
 
 
 class IvaoWorker(QObject):
@@ -38,6 +38,9 @@ class IvaoWorker(QObject):
 
     def get_selected_aircraft(self) -> None:
         """Fetch selected aircraft from Aurora Software and run FPL checks"""
+
+        if self.s is None:
+            return
 
         # send message
         try:
@@ -80,8 +83,13 @@ class IvaoWorker(QObject):
 
         # run checks
         result_semicircular_rule = check_semicircular_rule(departure_icao, arrival_icao, fl)
+
         result_sid = check_sid(departure_icao, route)
-        result_srd = check_route(departure_icao, arrival_icao, route)
+
+        if result_sid.details and result_sid.details.sid:
+            result_srd = check_route(departure_icao, arrival_icao, route, result_sid.details.sid)
+        else:
+            result_srd = check_route(departure_icao, arrival_icao, route)
 
         if result_srd.details is not None and result_srd.details.verified_route is not None:
             result_fl_srd = check_fl(fl, result_srd.details.routes[result_srd.details.verified_route])

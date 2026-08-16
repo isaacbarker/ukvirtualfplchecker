@@ -14,7 +14,7 @@ from models import Aircraft, CheckStatus, SidCheckDetails, SrdCheckDetails, FlCh
 from srd import get_airac_date, resource_path
 from ui.main_window_ui import Ui_MainWindow
 
-VER = "0.1.0"
+VER = "0.1.1"
 
 def format_notes(note_idxs: list[int]) -> str:
     """Formats notes for checks
@@ -53,7 +53,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
 
         self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, True)
-        self.setWindowIcon(QIcon(str(resource_path("assets/icon.png"))))
+        self.setWindowIcon(QIcon(str(resource_path("assets/icon.ico"))))
 
         # setup version/airac label
         airac_date = get_airac_date(dt.now())
