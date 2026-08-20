@@ -14,7 +14,8 @@ a = Analysis(
     optimize=0,
     datas=[
         ('./data/airports.csv', 'data'),
-        ('./assets/icon.png', 'assets'),
+        ('./assets/aircrafts.xlsx', 'data'),
+        ('./assets/icon.ico', 'assets'),
     ],
 )
 pyz = PYZ(a.pure)

@@ -36,3 +36,9 @@ and to consider if action must be taken on the flight plan
 ![](./screenshots/screenshot-1.png)
 ![](./screenshots/screenshot-2.png)
 
+## Credits
+
+- SRD data source - [Nats AIP](https://nats-uk.ead-it.com/cms-nats/opencms/en/home/)
+- Airport data source - [OurAirports Open Data](https://ourairports.com/data/)
+- Aircraft data source - [UK CAA Wake Turbulence Categories](https://www.caa.co.uk/commercial-industry/airspace/air-traffic-management-and-air-navigational-services/air-navigation-services/uk-wake-turbulence-categories/)
+
