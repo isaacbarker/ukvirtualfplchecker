@@ -9,7 +9,7 @@ from PySide6.QtCore import QObject, Signal, QTimer
 
 from checks import check_sid, check_semicircular_rule, check_route, check_fl
 from models import CheckResult, CheckStatus, Aircraft
-from srd import airports, srd
+from data import airports, srd, aircraft_aeroplanes, aircraft_rotorcraft
 
 
 class IvaoWorker(QObject):
@@ -61,17 +61,22 @@ class IvaoWorker(QObject):
         self.s.sendall(f"#FP;{callsign}\r\n".encode())
         fp_plan_data = self.s.recv(4096).decode().split(";")
 
+        if len(fp_plan_data) != 18: # check data field are all included
+            return
+
         # check aircraft is ifr
         flight_rules = fp_plan_data[8]
-
-        if flight_rules != "I":
-            return
 
         departure_icao = fp_plan_data[2]
         arrival_icao = fp_plan_data[3]
         aircraft_type = fp_plan_data[6]
         wake_cat = fp_plan_data[7]
-        fl = int(fp_plan_data[11][1:])
+
+        if fp_plan_data[11] == "VFR":
+            fl = 0
+        else:
+            fl = int(fp_plan_data[11][1:])
+
         route = fp_plan_data[15]
 
         # fetch dep/arr names
@@ -81,30 +86,51 @@ class IvaoWorker(QObject):
         departure_name = f"{airport_data_dep["name"]} ({airport_data_dep["municipality"]})"
         arrival_name = f"{airport_data_arr["name"]} ({airport_data_arr["municipality"]})"
 
-        # run checks
-        result_semicircular_rule = check_semicircular_rule(departure_icao, arrival_icao, fl)
+        # fetch aircraft name and CAA wake cat
+        if aircraft_type in aircraft_aeroplanes["ICAO Type Designator"].values:
+            aircraft = aircraft_aeroplanes[aircraft_aeroplanes["ICAO Type Designator"] == aircraft_type].iloc[0]
+            aircraft_name = f"{aircraft["Manufacturer"]} - {aircraft["Model"]}"
+            wake_cat_dep_caa = aircraft["UK Departure WTC"]
+            wake_cap_arr_caa = aircraft["UK Arrival WTC"]
 
-        result_sid = check_sid(departure_icao, route)
+        elif aircraft_type in aircraft_rotorcraft["ICAO Type Designator"].values:
+            aircraft = aircraft_rotorcraft[aircraft_rotorcraft["ICAO Type Designator"] == aircraft_type].iloc[0]
+            aircraft_name = f"{aircraft["Manufacturer"] - aircraft["Model"]}"
+            wake_cat_dep_caa = aircraft["UK Departure WTC"]
+            wake_cap_arr_caa = aircraft["UK Arrival WTC"]
 
-        if result_sid.details and result_sid.details.sid:
-            result_srd = check_route(departure_icao, arrival_icao, route, result_sid.details.sid)
         else:
-            result_srd = check_route(departure_icao, arrival_icao, route)
+            aircraft_name = None
+            wake_cat_dep_caa = None
+            wake_cap_arr_caa = None
 
-        if result_srd.details is not None and result_srd.details.verified_route is not None:
-            result_fl_srd = check_fl(fl, result_srd.details.routes[result_srd.details.verified_route])
+        if flight_rules == "I":
+            # run checks
+            result_semicircular_rule = check_semicircular_rule(departure_icao, arrival_icao, fl)
+
+            result_sid = check_sid(departure_icao, route)
+
+            if result_sid.details and result_sid.details.sid:
+                result_srd = check_route(departure_icao, arrival_icao, route, result_sid.details.sid)
+            else:
+                result_srd = check_route(departure_icao, arrival_icao, route)
+
+            if result_srd.details is not None and result_srd.details.verified_route is not None:
+                result_fl_srd = check_fl(fl, result_srd.details.routes[result_srd.details.verified_route])
+            else:
+                result_fl_srd = CheckResult(
+                    CheckStatus.NA,
+                    "No identified SRD route, so FL restrictions not determined"
+                )
+
+            checks = {
+                "Semi-Circular Rule": result_semicircular_rule,
+                "SID": result_sid,
+                "SRD Route": result_srd,
+                "SRD FL": result_fl_srd
+            }
         else:
-            result_fl_srd = CheckResult(
-                CheckStatus.NA,
-                "No identified SRD route, so FL restrictions not determined"
-            )
-
-        checks = {
-            "Semi-Circular Rule": result_semicircular_rule,
-            "SID": result_sid,
-            "SRD Route": result_srd,
-            "SRD FL": result_fl_srd
-        }
+            checks = {}
 
         # package information into Aircraft data
         aircraft = Aircraft(
@@ -112,7 +138,10 @@ class IvaoWorker(QObject):
             route=route,
             fl=fl,
             aircraft_type=aircraft_type,
+            aircraft_name=aircraft_name,
             wake_cat=wake_cat,
+            wake_cat_dep_caa=wake_cat_dep_caa,
+            wake_cat_arr_caa=wake_cap_arr_caa,
             dep=departure_icao,
             arr=arrival_icao,
             dep_name=departure_name,

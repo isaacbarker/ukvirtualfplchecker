@@ -1,8 +1,9 @@
 """
-srd.py
+data.py
 
 - Loads/downloads most recent srd based on AIRAC cycle from NATS AIP
 - Loads in open airports data
+- Loads in and opens aircraft data
 
 """
 import pandas as pd
@@ -32,6 +33,7 @@ LOCAL_SRD_TEMPLATE = "UK and Ireland SRD_{day:02} {month_name} {year}_Excel and 
 LOCAL_SRD_PATH = APP_DIR / "data" / "srds"
 LOCAL_SRD_PATH.mkdir(parents=True, exist_ok=True)
 AIRPORTS_DATA_PATH = resource_path("data/airports.csv")
+AIRCRAFT_DATA_PATH = resource_path("data/aircrafts.xlsx")
 
 
 def get_airac_date(current_dt: dt) -> dt:
@@ -147,3 +149,7 @@ srd_notes = pd.DataFrame(notes)
 
 # load in airports data
 airports = pd.read_csv(AIRPORTS_DATA_PATH)
+
+# load in aircraft data
+aircraft_aeroplanes = pd.read_excel(AIRCRAFT_DATA_PATH, sheet_name="Aeroplanes")
+aircraft_rotorcraft = pd.read_excel(AIRCRAFT_DATA_PATH, sheet_name="Rotorcraft")

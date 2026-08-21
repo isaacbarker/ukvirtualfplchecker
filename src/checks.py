@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 
 from models import CheckResult, SidCheckDetails, SrdCheckDetails, FlCheckDetails, CheckStatus
-from srd import srd, srd_notes, airports
+from data import srd, srd_notes, airports
 
 """Helper functions"""
 def route_has_notes(route_idx) -> bool:

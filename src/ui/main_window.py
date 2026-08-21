@@ -11,7 +11,7 @@ from datetime import datetime as dt
 from checks import fetch_note, fetch_route, fetch_notes
 from ivao import IvaoWorker
 from models import Aircraft, CheckStatus, SidCheckDetails, SrdCheckDetails, FlCheckDetails
-from srd import get_airac_date, resource_path
+from data import get_airac_date, resource_path
 from ui.main_window_ui import Ui_MainWindow
 
 VER = "0.1.1"
@@ -81,8 +81,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """Update aircraft UI"""
 
         self.callsign_label.setText(aircraft.callsign)
-        self.dep_label.setText(aircraft.dep_name)
-        self.arr_label.setText(aircraft.arr_name)
+        self.dep_label.setText(f"DEP {aircraft.dep} = {aircraft.dep_name}")
+        self.arr_label.setText(f"ARR {aircraft.arr} = {aircraft.arr_name}")
+
+        if aircraft.aircraft_name:
+            self.aircraft_name_label.setText(f"{aircraft.aircraft_type} = {aircraft.aircraft_name}")
+        else:
+            self.aircraft_name_label.setText(aircraft.aircraft_type)
+
+        if aircraft.wake_cat_dep_caa and aircraft.wake_cat_arr_caa:
+            if aircraft.wake_cat_dep_caa == aircraft.wake_cat_arr_caa:
+                self.wake_cat_label.setText(f"WAKE = {aircraft.wake_cat_dep_caa}")
+            else:
+                self.wake_cat_label.setText(f"WAKE DEP = {aircraft.wake_cat_dep_caa} \nWAKE ARR = {aircraft.wake_cat_arr_caa}")
+        else:
+            self.wake_cat_label.setText(f"WAKE = {aircraft.wake_cat}")
 
         check_results_txt = ""
 
@@ -125,9 +138,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 else:
                     check_results_txt += f"Min: MC, Max: F{check_result.details.max_fl:02}<br>"
 
-
             check_results_txt += "<br>"
-            self.check_results.setText(check_results_txt)
+
+        self.check_results.setText(check_results_txt)
 
     @Slot()
     def aurora_connection(self, is_connected) -> None:

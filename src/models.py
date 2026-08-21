@@ -37,7 +37,10 @@ class Aircraft:
     fl: int
 
     aircraft_type: str
+    aircraft_name: str | None
     wake_cat: str
+    wake_cat_dep_caa: str | None
+    wake_cat_arr_caa: str | None
 
     dep: str
     arr: str
